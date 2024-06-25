@@ -4,3 +4,7 @@ motor
 pymongo
 pydantic
 langchain
+langchain_community
+langchain-huggingface 
+huggingface_hub
+passlib
