@@ -6,11 +6,9 @@ from langchain import HuggingFaceHub
 import os
 
 
-<<<<<<< HEAD
+
 os.environ['HUGGINGFACEHUB_API_TOKEN'] = "add your User Access Tokens"
-=======
-os.environ['HUGGINGFACEHUB_API_TOKEN'] = "enter you APi key"
->>>>>>> edb05acbbb7629c8eac45b26499c14f21a954f5e
+
 
 repo_id = "google/pegasus-multi_news"
 
