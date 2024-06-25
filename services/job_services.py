@@ -6,7 +6,7 @@ from langchain import HuggingFaceHub
 import os
 
 
-os.environ['HUGGINGFACEHUB_API_TOKEN'] = "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"
+os.environ['HUGGINGFACEHUB_API_TOKEN'] = "add your User Access Tokens"
 
 repo_id = "google/pegasus-multi_news"
 
@@ -46,7 +46,7 @@ async def create_jd(jd_data: JobDescriptionCreate) -> JobDescription:
     """
     prompt = f"""Create a job description that is delimited by triple backticks 
     into a style that is {style}. 
-    text: ```{jd_data.prompt}```"""
+    text: {jd_data.prompt}```"""
     
     response = llm(prompt)
     
@@ -64,39 +64,44 @@ async def create_jd(jd_data: JobDescriptionCreate) -> JobDescription:
     await job_description_collection.insert_one(jd_dict)
     return JobDescription(**jd_dict)
 
-async def update_jd(id: int, jd_update: JobDescriptionUpdate) -> JobDescription:
-    # Retrieve the current job description from the database
-    current_jd = await job_description_collection.find_one({"id": id})
-    if current_jd is None:
-        raise HTTPException(status_code=404, detail="Job Description not found")
-    
-    # Initialize the update data
-    updated_data = {}
-    
-    # If prompt is provided and job_description is not, generate the job description
-    if jd_update.prompt and not jd_update.job_description:
-        generated_jd = await create_jd(jd_update.prompt)
-        updated_data = {
-            "prompt": jd_update.prompt,
-            "job_description": generated_jd
-        }
-    elif jd_update.job_description:
-        # If job_description is provided, use it directly
-        updated_data["job_description"] = jd_update.job_description
-        if jd_update.prompt:
-            updated_data["prompt"] = jd_update.prompt
-    
-    # Update the job description in the database
-    updated_jd = await job_description_collection.find_one_and_update(
-        {"id": id},
-        {"$set": updated_data},
-        return_document=ReturnDocument.AFTER
-    )
-    
-    if updated_jd is None:
-        raise HTTPException(status_code=404, detail="Job Description not found")
-    
-    return JobDescriptionResponse(**updated_jd)
+async def update_jd(id: int, jd_data: JobDescriptionUpdate) -> Optional[JobDescription]:
+    jd = await job_description_collection.find_one({"id": id})
+    if not jd:
+        return None
+
+    update_data = {}
+
+    if jd_data.prompt:
+        style = """
+        This is a job description
+        Please help me create a comprehensive and detailed job description using the following template:
+        Company Name:
+        Company Description:
+        Experience:
+        Skills:
+        Qualification:
+        Role Responsibilities:
+        Good to Have:
+        Populate each field according to the template
+        """
+        prompt = f"""Create a job description that is delimited by triple backticks 
+        into a style that is {style}. 
+        text: {jd_data.prompt}```"""
+        
+        response = llm(prompt)
+        jd_text = response
+
+        update_data["prompt"] = jd_data.prompt
+        update_data["job_description"] = jd_text
+    elif jd_data.job_description:
+        update_data["job_description"] = jd_data.job_description
+
+    if update_data:
+        await job_description_collection.update_one({"id": id}, {"$set": update_data})
+        jd = await job_description_collection.find_one({"id": id})
+        return JobDescription(**jd_helper(jd))
+
+    return JobDescription(**jd_helper(jd))
 
 async def delete_jd(id: int) -> bool:
     result = await job_description_collection.delete_one({"id": id})

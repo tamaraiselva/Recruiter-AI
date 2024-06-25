@@ -20,15 +20,12 @@ async def read_jd(id: int):
 async def create_jd_route(jd: JobDescriptionCreate):
     return await create_jd(jd)
 
-@router.put("/{id}", response_model=JobDescription)
+@router.put("/{id}", response_model=JobDescriptionResponse)
 async def update_jd_route(id: int, jd_update: JobDescriptionUpdate):
-    try:
-        updated_jd = await update_jd(id, jd_update)
-        return updated_jd
-    except HTTPException as e:
-        raise e
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    jd = await update_jd(id, jd_update)
+    if jd is None:
+        raise HTTPException(status_code=404, detail="Job Description not found")
+    return jd
 
 @router.delete("/{id}", response_model=dict)
 async def delete_jd_route(id: int):
