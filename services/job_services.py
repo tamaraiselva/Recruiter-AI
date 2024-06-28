@@ -6,9 +6,7 @@ from langchain import HuggingFaceHub
 import os
 
 
-
-os.environ['HUGGINGFACEHUB_API_TOKEN'] = "add your User Access Tokens"
-
+os.environ['HUGGINGFACEHUB_API_TOKEN'] = "google/flan-t5-large"
 
 repo_id = "google/pegasus-multi_news"
 
