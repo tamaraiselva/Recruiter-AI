@@ -6,9 +6,9 @@ from langchain import HuggingFaceHub
 import os
 
 
-os.environ['HUGGINGFACEHUB_API_TOKEN'] = "google/flan-t5-large"
+os.environ['HUGGINGFACEHUB_API_TOKEN'] = "your apl key enter"
 
-repo_id = "google/pegasus-multi_news"
+repo_id = "google/flan-t5-large"
 
 llm = HuggingFaceHub(
     repo_id=repo_id, model_kwargs={"temperature": 0.5, "max_length": 200}
